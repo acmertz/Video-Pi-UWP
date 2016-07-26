@@ -67,13 +67,13 @@ namespace Video_Pi.Views
             string newProjectJSON = sr.ReadToEnd();
 
             Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            StorageFile newProjectFile = await localFolder.CreateFileAsync(myNewProject.Name, Windows.Storage.CreationCollisionOption.GenerateUniqueName);
+            StorageFile newProjectFile = await localFolder.CreateFileAsync(myNewProject.Name + ".vpp", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
             await FileIO.WriteTextAsync(newProjectFile, newProjectJSON);
 
             Debug.WriteLine("Navigating to the Editor...");
 
             Frame rootFrame = Window.Current.Content as Frame;
-            rootFrame.Navigate(typeof(Editor), myNewProject);
+            rootFrame.Navigate(typeof(Editor));
         }
 
         private void NewProjectButtonClicked(object sender, RoutedEventArgs e)
