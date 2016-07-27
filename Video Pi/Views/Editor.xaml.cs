@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization.Json;
+using Video_Pi.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -30,14 +35,43 @@ namespace Video_Pi.Views
             SystemNavigationManager.GetForCurrentView().BackRequested += Unload;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            string projectPath = (string)e.Parameter;
+            FileNameTextBlock.Text = projectPath;
+            loadProject(projectPath);            
+        }
+
         private void Unload(object sender, BackRequestedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
             if (rootFrame.CanGoBack)
             {
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().Title = "";
                 SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
                 rootFrame.GoBack();
             }
+        }
+
+        async private void loadProject (string pathToProject)
+        {
+            // Open the file at the given path and read its contents
+            StorageFile projectFile = await StorageFile.GetFileFromPathAsync(pathToProject);
+            string fileContents = await Windows.Storage.FileIO.ReadTextAsync(projectFile);
+
+            // Deserialize the JSON data
+            DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(VideoPiProject));
+            MemoryStream ms = new MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(fileContents));
+            VideoPiProject currentProject = (VideoPiProject)js.ReadObject(ms);
+
+            // Perform additional remaining setup tasks
+            currentProject.Name = projectFile.DisplayName;
+            ApplicationView appView = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
+            appView.Title = currentProject.Name;
+
+            TimelineScenelineFrame.Navigate(typeof(Views.EditorSceneline));
+
+            Debug.WriteLine("Loaded the project.");
         }
     }
 }

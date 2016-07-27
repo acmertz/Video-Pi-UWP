@@ -7,7 +7,34 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="10">
-        <TextBlock Text="Welcome to the Editor!" />
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions></Grid.ColumnDefinitions>
+
+        <CommandBar>
+            <CommandBar.Content>
+                <Grid/>
+            </CommandBar.Content>
+            <AppBarButton Icon="Accept" Label="appbarbutton"/>
+            <AppBarButton Icon="Cancel" Label="appbarbutton"/>
+        </CommandBar>
+
+        <RelativePanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
+            <StackPanel Grid.Row="1">
+                <MediaElement Grid.Row="1" Width="640" Height="360" AutoPlay="False"/>
+                <TextBlock Text="Welcome to the Editor!" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Project filename:"/>
+                    <TextBlock Name="FileNameTextBlock" Margin="10,0,0,0" />
+                </StackPanel>
+            </StackPanel>
+        </RelativePanel>
+
+
+        <Frame Grid.Row="2" Name="TimelineScenelineFrame" Background="#ececec" BorderBrush="#cccccc" BorderThickness="0,1,0,0"></Frame>
     </Grid>
 </Page>

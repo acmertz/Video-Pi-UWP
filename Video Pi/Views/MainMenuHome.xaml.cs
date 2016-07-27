@@ -73,7 +73,7 @@ namespace Video_Pi.Views
             Debug.WriteLine("Navigating to the Editor...");
 
             Frame rootFrame = Window.Current.Content as Frame;
-            rootFrame.Navigate(typeof(Editor));
+            rootFrame.Navigate(typeof(Editor), newProjectFile.Path);
         }
 
         private void NewProjectButtonClicked(object sender, RoutedEventArgs e)
