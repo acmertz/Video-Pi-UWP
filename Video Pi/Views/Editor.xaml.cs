@@ -37,6 +37,7 @@ namespace Video_Pi.Views
             this.InitializeComponent();
 
             mediaComposition = new MediaComposition();
+            mediaComposition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(10000)));
             for (int i=0; i<4; i++) mediaComposition.OverlayLayers.Add(new MediaOverlayLayer());
             UpdateMediaStreamSource();
 
@@ -65,7 +66,7 @@ namespace Video_Pi.Views
         private void UpdateMediaStreamSource()
         {
             mediaStreamSource = mediaComposition.GeneratePreviewMediaStreamSource((int)EditorPlaybackCanvas.ActualWidth, (int)EditorPlaybackCanvas.ActualHeight);
-            //EditorPlaybackCanvas.SetMediaStreamSource(mediaStreamSource);
+            EditorPlaybackCanvas.SetMediaStreamSource(mediaStreamSource);
         }
 
         async private void loadProject (string pathToProject)
@@ -89,6 +90,7 @@ namespace Video_Pi.Views
 
         async private void importMedia (int targetSlot)
         {
+            // Pick a media file
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
@@ -97,7 +99,32 @@ namespace Video_Pi.Views
             picker.FileTypeFilter.Add(".avi");
             picker.CommitButtonText = "Import";
 
+            // Add the file
             Windows.Storage.StorageFile fileToImport = await picker.PickSingleFileAsync();
+            if (fileToImport != null)
+            {
+                // Add the item to the future access list so we can reload the project later
+                var storageItemAccessList = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList;
+                storageItemAccessList.Add(fileToImport);
+
+                // Create a MediaClip and MediaOverlay to hold it
+                var clipToImport = await MediaClip.CreateFromFileAsync(fileToImport);
+                var mediaOverlayToImport = new MediaOverlay(clipToImport);
+
+                // Todo: Generate coordinates for the overlay based on the slot
+                Rect overlayPosition;
+                overlayPosition.Width = 320;
+                overlayPosition.Height = 180;
+                overlayPosition.X = 0;
+                overlayPosition.Y = 0;
+
+                // Set the overlay's coordinates and add it to the media composition
+                mediaOverlayToImport.Position = overlayPosition;
+                mediaComposition.OverlayLayers[targetSlot].Overlays.Add(mediaOverlayToImport);
+
+                // Update the playback canvas
+                UpdateMediaStreamSource();
+            }
         }
 
         private void SlotButtonClicked(object sender, RoutedEventArgs e)
