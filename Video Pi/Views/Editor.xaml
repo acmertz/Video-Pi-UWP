@@ -19,22 +19,59 @@
             <CommandBar.Content>
                 <Grid/>
             </CommandBar.Content>
-            <AppBarButton Icon="Accept" Label="appbarbutton"/>
-            <AppBarButton Icon="Cancel" Label="appbarbutton"/>
+            <AppBarButton Icon="Accept" Label="Accept"/>
+            <AppBarButton Icon="Cancel" Label="Cancel"/>
         </CommandBar>
 
         <RelativePanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
-            <StackPanel Grid.Row="1">
-                <MediaElement Grid.Row="1" Width="640" Height="360" AutoPlay="False"/>
-                <TextBlock Text="Welcome to the Editor!" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Project filename:"/>
-                    <TextBlock Name="FileNameTextBlock" Margin="10,0,0,0" />
-                </StackPanel>
-            </StackPanel>
+            <MediaElement Grid.Row="1" Name="EditorPlaybackCanvas" Width="640" Height="360" AutoPlay="False"/>
+            <TextBlock Name="FileNameTextBlock" Text="Filename goes here" Margin="10,0,0,0" RelativePanel.Below="EditorPlaybackCanvas" />
         </RelativePanel>
 
 
-        <Frame Grid.Row="2" Name="TimelineScenelineFrame" Background="#ececec" BorderBrush="#cccccc" BorderThickness="0,1,0,0"></Frame>
+        <Grid Grid.Row="2" Background="#ececec" BorderBrush="#cccccc" BorderThickness="0,1,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            
+            <StackPanel>
+                <Button Content="&#xE102;" FontFamily="Segoe MDL2 Assets" Width="48" Height="48" />
+                <ScrollViewer VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel>
+                        <Button Width="48" Height="48" Click="SlotButtonClicked">1</Button>
+                        <Button Width="48" Height="48" Click="SlotButtonClicked">2</Button>
+                        <Button Width="48" Height="48" Click="SlotButtonClicked">3</Button>
+                        <Button Width="48" Height="48" Click="SlotButtonClicked">4</Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
+
+
+            <ScrollViewer Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
+                <Grid Width="9999" VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+
+                    <Grid Height="48" Background="LightBlue" BorderBrush="#cccccc" BorderThickness="0,0,0,1" >
+                        <TextBlock Text="Seek bar/ruler goes here" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="10"  />
+                    </Grid>
+                    <StackPanel Grid.Row="1">
+                        <RelativePanel Height="48" Width="9999" Background="White" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
+                        <RelativePanel Height="48" Width="9999" Background="#efefef" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
+                        <RelativePanel Height="48" Width="9999" Background="White" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
+                        <RelativePanel Height="48" Width="9999" Background="#efefef" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

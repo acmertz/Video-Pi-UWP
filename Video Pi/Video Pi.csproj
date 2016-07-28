@@ -107,12 +107,6 @@
     <Compile Include="Views\Editor.xaml.cs">
       <DependentUpon>Editor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\EditorSceneline.xaml.cs">
-      <DependentUpon>EditorSceneline.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EditorTimeline.xaml.cs">
-      <DependentUpon>EditorTimeline.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainMenuFeedback.xaml.cs">
       <DependentUpon>MainMenuFeedback.xaml</DependentUpon>
     </Compile>
@@ -154,14 +148,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Editor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EditorSceneline.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EditorTimeline.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
