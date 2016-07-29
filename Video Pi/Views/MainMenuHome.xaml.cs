@@ -56,7 +56,14 @@ namespace Video_Pi.Views
                     break;
             }
 
-            Models.VideoPiProject myNewProject = new Models.VideoPiProject("Untitled project", aspectRatio, width, height);
+            // Todo: build UI for selecting grid presets and initialize the grid based on the user's selection
+            Models.VideoGridSlot[] gridSlots = new Models.VideoGridSlot[4];
+            gridSlots[0] = new Models.VideoGridSlot(0, 0, .5, .5);
+            gridSlots[1] = new Models.VideoGridSlot(.5, 0, .5, .5);
+            gridSlots[2] = new Models.VideoGridSlot(0, .5, .5, .5);
+            gridSlots[3] = new Models.VideoGridSlot(.5, .5, .5, .5);
+
+            Models.VideoPiProject myNewProject = new Models.VideoPiProject("Untitled project", width, height, gridSlots);
 
             MemoryStream stream1 = new MemoryStream();
             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Models.VideoPiProject));
@@ -69,8 +76,6 @@ namespace Video_Pi.Views
             Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
             StorageFile newProjectFile = await localFolder.CreateFileAsync(myNewProject.Name + ".vpp", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
             await FileIO.WriteTextAsync(newProjectFile, newProjectJSON);
-
-            Debug.WriteLine("Navigating to the Editor...");
 
             Frame rootFrame = Window.Current.Content as Frame;
             rootFrame.Navigate(typeof(Editor), newProjectFile.Path);

@@ -30,27 +30,12 @@ namespace Video_Pi.Views
     /// </summary>
     public sealed partial class Editor : Page
     {
+        private VideoPiProject currentProject;
         private MediaComposition mediaComposition;
         private MediaStreamSource mediaStreamSource;
-        private VideoGridSlot[] videoGridSlotArray;
         public Editor()
         {
             this.InitializeComponent();
-
-            mediaComposition = new MediaComposition();
-            mediaComposition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(0)));
-            for (int i=0; i<4; i++) mediaComposition.OverlayLayers.Add(new MediaOverlayLayer());
-            UpdateMediaStreamSource();
-
-            // Temporary for testing purposes: hard-code a 2x2 grid
-            videoGridSlotArray = new VideoGridSlot[4];
-            videoGridSlotArray[0] = new VideoGridSlot(0, 0, .5, .5);
-            videoGridSlotArray[1] = new VideoGridSlot(.5, 0, .5, .5);
-            videoGridSlotArray[2] = new VideoGridSlot(0, .5, .5, .5);
-            videoGridSlotArray[3] = new VideoGridSlot(.5, .5, .5, .5);
-
-            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Visible;
-            SystemNavigationManager.GetForCurrentView().BackRequested += Unload;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -103,7 +88,33 @@ namespace Video_Pi.Views
             // Deserialize the JSON data
             DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(VideoPiProject));
             MemoryStream ms = new MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(fileContents));
-            VideoPiProject currentProject = (VideoPiProject)js.ReadObject(ms);
+            currentProject = (VideoPiProject)js.ReadObject(ms);
+
+            // Set up the media composition based on the project details
+            mediaComposition = new MediaComposition();
+            mediaComposition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(0)));
+            for (int i = 0; i < 4; i++) mediaComposition.OverlayLayers.Add(new MediaOverlayLayer());
+            UpdateMediaStreamSource();
+
+            // Todo: dynamically build the layout and slots based on the loaded project file
+            for (int i=0; i<currentProject.GridSlots.Length; i++)
+            {
+                Button tempHeader = new Button();
+                tempHeader.Content = (i + 1).ToString();
+                tempHeader.Style = TimelineHeaderStyle;
+                tempHeader.Click += SlotButtonClicked;
+
+                RelativePanel tempTrack = new RelativePanel();
+                tempTrack.Style = TimelineTrackStyle;
+                if (i % 2 == 0) tempTrack.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
+
+                TimelineHeaderContainer.Children.Add(tempHeader);
+                TimelineTrackContainer.Children.Add(tempTrack);
+            }
+
+            // Set window title and enable the back button
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Visible;
+            SystemNavigationManager.GetForCurrentView().BackRequested += Unload;
 
             // Perform additional remaining setup tasks
             currentProject.Name = projectFile.DisplayName;
@@ -141,10 +152,10 @@ namespace Video_Pi.Views
                 double playbackHeight = EditorPlaybackCanvas.ActualHeight;
 
                 Rect overlayPosition;
-                overlayPosition.Width = videoGridSlotArray[targetSlot].Width * playbackWidth;
-                overlayPosition.Height = videoGridSlotArray[targetSlot].Height * playbackHeight;
-                overlayPosition.X = videoGridSlotArray[targetSlot].X * playbackWidth;
-                overlayPosition.Y = videoGridSlotArray[targetSlot].Y * playbackHeight;
+                overlayPosition.Width = currentProject.GridSlots[targetSlot].Width * playbackWidth;
+                overlayPosition.Height = currentProject.GridSlots[targetSlot].Height * playbackHeight;
+                overlayPosition.X = currentProject.GridSlots[targetSlot].X * playbackWidth;
+                overlayPosition.Y = currentProject.GridSlots[targetSlot].Y * playbackHeight;
 
                 // Set the overlay's coordinates and add it to the media composition
                 mediaOverlayToImport.Position = overlayPosition;
@@ -161,6 +172,11 @@ namespace Video_Pi.Views
             Button clickedButton = (Button)sender;
             int clickedSlot = Int32.Parse((string)clickedButton.Content) - 1;
             importMedia(clickedSlot);
+        }
+
+        private void WindowResized(object sender, SizeChangedEventArgs e)
+        {
+            Debug.WriteLine("The screen was resized. Update the media element's size.");
         }
     }
 }

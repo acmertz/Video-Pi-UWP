@@ -5,7 +5,22 @@
     xmlns:local="using:Video_Pi.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    SizeChanged="WindowResized">
+
+    <Page.Resources>
+        <Style TargetType="RelativePanel" x:Name="TimelineTrackStyle">
+            <Setter Property="Width" Value="9999" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="BorderBrush" Value="#cccccc" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Background" Value="#efefef" />
+        </Style>
+        <Style TargetType="Button" x:Name="TimelineHeaderStyle">
+            <Setter Property="Width" Value="48" />
+            <Setter Property="Height" Value="48" />
+        </Style>
+    </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
         <Grid.RowDefinitions>
@@ -38,37 +53,29 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            
-            <StackPanel>
-                <Button Content="&#xE102;" FontFamily="Segoe MDL2 Assets" Width="48" Height="48" />
+            <Button Content="&#xE102;" FontFamily="Segoe MDL2 Assets" Width="48" Height="48" />
+            <Grid Grid.Column="1" Height="48" Background="LightBlue" BorderBrush="#cccccc" BorderThickness="1,0,0,1" >
+                <TextBlock Text="Seek bar/ruler goes here" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="10"  />
+            </Grid>
+
+            <StackPanel Grid.Row="1">
                 <ScrollViewer VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden">
-                    <StackPanel>
-                        <Button Width="48" Height="48" Click="SlotButtonClicked">1</Button>
-                        <Button Width="48" Height="48" Click="SlotButtonClicked">2</Button>
-                        <Button Width="48" Height="48" Click="SlotButtonClicked">3</Button>
-                        <Button Width="48" Height="48" Click="SlotButtonClicked">4</Button>
-                    </StackPanel>
+                    <StackPanel Name="TimelineHeaderContainer"></StackPanel>
                 </ScrollViewer>
             </StackPanel>
 
 
-            <ScrollViewer Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
-                <Grid Width="9999" VerticalAlignment="Top">
+
+            <ScrollViewer Grid.Row="1" Grid.Column="1" BorderBrush="#cccccc" BorderThickness="1,0,0,0" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
+                <Grid Width="9999" Height="9999" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
 
-                    <Grid Height="48" Background="LightBlue" BorderBrush="#cccccc" BorderThickness="0,0,0,1" >
-                        <TextBlock Text="Seek bar/ruler goes here" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="10"  />
-                    </Grid>
-                    <StackPanel Grid.Row="1">
-                        <RelativePanel Height="48" Width="9999" Background="White" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
-                        <RelativePanel Height="48" Width="9999" Background="#efefef" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
-                        <RelativePanel Height="48" Width="9999" Background="White" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
-                        <RelativePanel Height="48" Width="9999" Background="#efefef" BorderBrush="#cccccc" BorderThickness="0,0,0,1"></RelativePanel>
-                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Name="TimelineTrackContainer"></StackPanel>
                 </Grid>
             </ScrollViewer>
         </Grid>

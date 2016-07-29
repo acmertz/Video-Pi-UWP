@@ -16,13 +16,13 @@ namespace Video_Pi.Models
         public ProjectResolution Resolution { get; set; }
 
         [DataMember]
-        public string AspectRatio { get; set; }
+        public VideoGridSlot[] GridSlots { get; set; }
 
-        public VideoPiProject(string name, string aspectRatio, int width, int height)
+        public VideoPiProject(string name, int width, int height, VideoGridSlot[] gridSlots)
         {
             Name = name;
-            AspectRatio = aspectRatio;
             Resolution = new ProjectResolution(width, height);
+            GridSlots = gridSlots;
         }
     }
 
