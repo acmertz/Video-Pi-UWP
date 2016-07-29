@@ -25,7 +25,6 @@
 
         <RelativePanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <MediaElement AreTransportControlsEnabled="True" Grid.Row="1" Name="EditorPlaybackCanvas" Width="640" Height="360" AutoPlay="False"/>
-            <TextBlock Name="FileNameTextBlock" Text="Filename goes here" Margin="10,0,0,0" RelativePanel.Below="EditorPlaybackCanvas" />
         </RelativePanel>
 
 
