@@ -30,9 +30,7 @@ namespace Video_Pi.Views
     /// </summary>
     public sealed partial class Editor : Page
     {
-        private VideoPiProject currentProject;
-        private MediaComposition mediaComposition;
-        private MediaStreamSource mediaStreamSource;
+        private VideoPiProject CurrentProject;
         public Editor()
         {
             this.InitializeComponent();
@@ -60,9 +58,9 @@ namespace Video_Pi.Views
         {
             // Todo: Determine how long the entire composition is
             TimeSpan lastTime = new TimeSpan(0);
-            for (int i=0; i<mediaComposition.OverlayLayers.Count; i++)
+            for (int i=0; i<CurrentProject.Composition.OverlayLayers.Count; i++)
             {
-                MediaOverlayLayer currentLayer = mediaComposition.OverlayLayers[i];
+                MediaOverlayLayer currentLayer = CurrentProject.Composition.OverlayLayers[i];
                 for (int k=0; k<currentLayer.Overlays.Count; k++)
                 {
                     TimeSpan currentClipEnd = currentLayer.Overlays[k].Clip.EndTimeInComposition;
@@ -71,11 +69,11 @@ namespace Video_Pi.Views
             }
 
             if (lastTime.Ticks == 0) lastTime = new TimeSpan(0, 10, 0);
-            mediaComposition.Clips.RemoveAt(0);
-            mediaComposition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), lastTime));
+            CurrentProject.Composition.Clips.RemoveAt(0);
+            CurrentProject.Composition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), lastTime));
 
             // Generate and set the stream source
-            mediaStreamSource = mediaComposition.GeneratePreviewMediaStreamSource((int)EditorPlaybackCanvas.ActualWidth, (int)EditorPlaybackCanvas.ActualHeight);
+            MediaStreamSource mediaStreamSource = CurrentProject.Composition.GeneratePreviewMediaStreamSource((int)EditorPlaybackCanvas.ActualWidth, (int)EditorPlaybackCanvas.ActualHeight);
             EditorPlaybackCanvas.SetMediaStreamSource(mediaStreamSource);
         }
 
@@ -88,28 +86,31 @@ namespace Video_Pi.Views
             // Deserialize the JSON data
             DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(VideoPiProject));
             MemoryStream ms = new MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(fileContents));
-            currentProject = (VideoPiProject)js.ReadObject(ms);
+            CurrentProject = (VideoPiProject)js.ReadObject(ms);
+            CurrentProject.Name = projectFile.DisplayName;
 
             // Set up the media composition based on the project details
-            mediaComposition = new MediaComposition();
-            mediaComposition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(0)));
-            for (int i = 0; i < 4; i++) mediaComposition.OverlayLayers.Add(new MediaOverlayLayer());
+            CurrentProject.Composition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(0)));
+            for (int i = 0; i < 4; i++) CurrentProject.Composition.OverlayLayers.Add(new MediaOverlayLayer());
             UpdateMediaStreamSource();
 
             // Todo: dynamically build the layout and slots based on the loaded project file
-            for (int i=0; i<currentProject.GridSlots.Length; i++)
+            for (int i=0; i<CurrentProject.GridSlots.Length; i++)
             {
                 Button tempHeader = new Button();
                 tempHeader.Content = (i + 1).ToString();
                 tempHeader.Style = TimelineHeaderStyle;
                 tempHeader.Click += SlotButtonClicked;
 
-                RelativePanel tempTrack = new RelativePanel();
+                Grid tempTrack = new Grid();
                 tempTrack.Style = TimelineTrackStyle;
                 if (i % 2 == 0) tempTrack.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
 
                 TimelineHeaderContainer.Children.Add(tempHeader);
                 TimelineTrackContainer.Children.Add(tempTrack);
+
+                CurrentProject.GridSlots[i].HeaderElement = tempHeader;
+                CurrentProject.GridSlots[i].TrackElement = tempTrack;
             }
 
             // Set window title and enable the back button
@@ -117,9 +118,8 @@ namespace Video_Pi.Views
             SystemNavigationManager.GetForCurrentView().BackRequested += Unload;
 
             // Perform additional remaining setup tasks
-            currentProject.Name = projectFile.DisplayName;
             ApplicationView appView = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
-            appView.Title = currentProject.Name;
+            appView.Title = CurrentProject.Name;
 
             Debug.WriteLine("Loaded the project.");
         }
@@ -147,20 +147,36 @@ namespace Video_Pi.Views
                 var clipToImport = await MediaClip.CreateFromFileAsync(fileToImport);
                 var mediaOverlayToImport = new MediaOverlay(clipToImport);
 
-                // Todo: Generate coordinates for the overlay based on the slot
+                // Generate coordinates for the overlay based on the slot
                 double playbackWidth = EditorPlaybackCanvas.ActualWidth;
                 double playbackHeight = EditorPlaybackCanvas.ActualHeight;
 
                 Rect overlayPosition;
-                overlayPosition.Width = currentProject.GridSlots[targetSlot].Width * playbackWidth;
-                overlayPosition.Height = currentProject.GridSlots[targetSlot].Height * playbackHeight;
-                overlayPosition.X = currentProject.GridSlots[targetSlot].X * playbackWidth;
-                overlayPosition.Y = currentProject.GridSlots[targetSlot].Y * playbackHeight;
+                overlayPosition.Width = CurrentProject.GridSlots[targetSlot].Width * playbackWidth;
+                overlayPosition.Height = CurrentProject.GridSlots[targetSlot].Height * playbackHeight;
+                overlayPosition.X = CurrentProject.GridSlots[targetSlot].X * playbackWidth;
+                overlayPosition.Y = CurrentProject.GridSlots[targetSlot].Y * playbackHeight;
 
                 // Set the overlay's coordinates and add it to the media composition
                 mediaOverlayToImport.Position = overlayPosition;
                 mediaOverlayToImport.AudioEnabled = true;
-                mediaComposition.OverlayLayers[targetSlot].Overlays.Add(mediaOverlayToImport);
+                CurrentProject.Composition.OverlayLayers[targetSlot].Overlays.Add(mediaOverlayToImport);
+
+                // Create a display for the clip in the timeline
+                StackPanel tempClipEl = new StackPanel();
+                tempClipEl.Style = TimelineClipStyle;
+                tempClipEl.Width = clipToImport.OriginalDuration.TotalMilliseconds / CurrentProject.MsPerPx;
+
+                TextBlock tempTitle = new TextBlock();
+                tempTitle.Style = TimelineClipTitleStyle;
+                tempTitle.Text = fileToImport.DisplayName;
+                tempClipEl.Children.Add(tempTitle);
+
+                VideoGridClip clipObj = new VideoGridClip(fileToImport, tempClipEl);
+
+                // Add the clip to the track and update it in the model
+                CurrentProject.GridSlots[targetSlot].TrackElement.Children.Add(tempClipEl);
+                CurrentProject.GridSlots[targetSlot].Clip = clipObj;
 
                 // Update the playback canvas
                 UpdateMediaStreamSource();
@@ -177,6 +193,12 @@ namespace Video_Pi.Views
         private void WindowResized(object sender, SizeChangedEventArgs e)
         {
             Debug.WriteLine("The screen was resized. Update the media element's size.");
+        }
+
+        private void TimelineViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            TimelineRulerScrollContainer.ChangeView(TimelineScrollContainer.HorizontalOffset, 0, TimelineRulerScrollContainer.ZoomFactor);
+            TimelineHeaderScrollContainer.ChangeView(0, TimelineScrollContainer.VerticalOffset, TimelineHeaderScrollContainer.ZoomFactor);
         }
     }
 }

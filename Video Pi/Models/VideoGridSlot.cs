@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 
 namespace Video_Pi.Models
 {
@@ -21,6 +22,13 @@ namespace Video_Pi.Models
 
         [DataMember]
         public double Height;
+
+        public Button HeaderElement;
+
+        public Grid TrackElement;
+
+        [DataMember]
+        public VideoGridClip Clip;
 
         public VideoGridSlot (double x, double y, double width, double height)
         {
