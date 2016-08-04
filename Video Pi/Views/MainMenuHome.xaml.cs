@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Serialization.Json;
 using System.Xml;
+using Video_Pi.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -26,9 +27,16 @@ namespace Video_Pi.Views
     /// </summary>
     public sealed partial class MainMenuHome : Page
     {
+
+        private List<VideoPiProject> Projects;
         public MainMenuHome()
         {
             this.InitializeComponent();
+            Projects = new List<VideoPiProject>();
+            for (int i=0; i<4; i++)
+            {
+                Projects.Add(new VideoPiProject(1920, 1080, new VideoGridSlot[0]));
+            }
         }
 
         private async void CreateNewProject(string aspectRatio)
@@ -63,7 +71,7 @@ namespace Video_Pi.Views
             gridSlots[2] = new Models.VideoGridSlot(0, .5, .5, .5);
             gridSlots[3] = new Models.VideoGridSlot(.5, .5, .5, .5);
 
-            Models.VideoPiProject myNewProject = new Models.VideoPiProject("Untitled project", width, height, gridSlots);
+            Models.VideoPiProject myNewProject = new Models.VideoPiProject(width, height, gridSlots);
 
             MemoryStream stream1 = new MemoryStream();
             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Models.VideoPiProject));
@@ -74,7 +82,7 @@ namespace Video_Pi.Views
             string newProjectJSON = sr.ReadToEnd();
 
             Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            StorageFile newProjectFile = await localFolder.CreateFileAsync(myNewProject.Name + ".vpp", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
+            StorageFile newProjectFile = await localFolder.CreateFileAsync("Untitled project.vpp", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
             await FileIO.WriteTextAsync(newProjectFile, newProjectJSON);
 
             Frame rootFrame = Window.Current.Content as Frame;

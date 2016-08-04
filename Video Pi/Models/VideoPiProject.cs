@@ -12,7 +12,7 @@ namespace Video_Pi.Models
     class VideoPiProject
     {
         public MediaComposition Composition;
-        public string Name { get; set; }
+        public Windows.Storage.StorageFile File;
 
         [DataMember]
         public ProjectResolution Resolution { get; set; }
@@ -29,9 +29,8 @@ namespace Video_Pi.Models
             Composition = new MediaComposition();
         }
 
-        public VideoPiProject(string name, int width, int height, VideoGridSlot[] gridSlots)
+        public VideoPiProject(int width, int height, VideoGridSlot[] gridSlots)
         {
-            Name = name;
             Resolution = new ProjectResolution(width, height);
             GridSlots = gridSlots;
             MsPerPx = 180;

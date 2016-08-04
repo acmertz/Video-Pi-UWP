@@ -87,7 +87,7 @@ namespace Video_Pi.Views
             DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(VideoPiProject));
             MemoryStream ms = new MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(fileContents));
             CurrentProject = (VideoPiProject)js.ReadObject(ms);
-            CurrentProject.Name = projectFile.DisplayName;
+            CurrentProject.File = projectFile;
 
             // Set up the media composition based on the project details
             CurrentProject.Composition.Clips.Add(MediaClip.CreateFromColor(Windows.UI.Color.FromArgb(1, 0, 0, 0), new TimeSpan(0)));
@@ -119,7 +119,7 @@ namespace Video_Pi.Views
 
             // Perform additional remaining setup tasks
             ApplicationView appView = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
-            appView.Title = CurrentProject.Name;
+            appView.Title = CurrentProject.File.DisplayName;
 
             Debug.WriteLine("Loaded the project.");
         }
@@ -180,7 +180,25 @@ namespace Video_Pi.Views
 
                 // Update the playback canvas
                 UpdateMediaStreamSource();
+
+                // Trigger a save operation
+                saveProject();
             }
+        }
+
+        async private void saveProject()
+        {
+            MemoryStream stream1 = new MemoryStream();
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Models.VideoPiProject));
+            ser.WriteObject(stream1, CurrentProject);
+
+            stream1.Position = 0;
+            StreamReader sr = new StreamReader(stream1);
+            string projectJSON = sr.ReadToEnd();
+
+            await FileIO.WriteTextAsync(CurrentProject.File, projectJSON);
+
+            Debug.WriteLine("Saved the proejct.");
         }
 
         private void SlotButtonClicked(object sender, RoutedEventArgs e)

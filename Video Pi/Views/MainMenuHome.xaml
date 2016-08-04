@@ -5,6 +5,7 @@
     xmlns:local="using:Video_Pi.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:data="using:Video_Pi.Models"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -13,17 +14,37 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
         <TextBlock Text="New project" Style="{StaticResource HeaderTextBlockStyle}" />
-        <TextBlock Text="Select an aspect ratio to get started! We reccommend 16:9." Style="{StaticResource BodyTextBlockStyle}" />
-        <StackPanel Orientation="Horizontal">
+        <TextBlock Grid.Row="1" Text="Select an aspect ratio to get started! We reccommend 16:9." Style="{StaticResource BodyTextBlockStyle}" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
             <Button Content="4:3" Name="AspectButton_43" Click="NewProjectButtonClicked" Style="{ThemeResource AspectButtonStyle}" />
             <Button Content="16:10" Name="AspectButton_1610" Click="NewProjectButtonClicked" Style="{ThemeResource AspectButtonStyle}"/>
             <Button Content="16:9" Name="AspectButton_169" Click="NewProjectButtonClicked" Style="{ThemeResource AspectButtonStyle}" />
             <Button Content="2.39:1" Name="AspectButton_2391" Click="NewProjectButtonClicked" Style="{ThemeResource AspectButtonStyle}" />
         </StackPanel>
 
-        <TextBlock Text="Open project" Style="{StaticResource HeaderTextBlockStyle}" />
-        <TextBlock Text="Saved projects will be enumerated here." Style="{StaticResource BodyTextBlockStyle}" />
-    </StackPanel>
+        <TextBlock Grid.Row="3" Text="Open project" Style="{StaticResource HeaderTextBlockStyle}" />
+        <ListView Grid.Row="4" ItemsSource="{x:Bind Projects}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="data:VideoPiProject">
+                    <StackPanel Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Title here" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind MsPerPx}" />
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="zoom level" Margin="5,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </Page>
