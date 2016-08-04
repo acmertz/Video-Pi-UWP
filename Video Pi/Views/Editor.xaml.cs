@@ -26,7 +26,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Video_Pi.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// The Editor. Import and record clips, adjust timing, and export your finished project.
     /// </summary>
     public sealed partial class Editor : Page
     {

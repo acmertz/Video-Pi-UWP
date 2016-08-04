@@ -23,7 +23,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Video_Pi.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Home Page on the Main Menu. Displays a list of existing projects and allows the user to create new projects.
     /// </summary>
     public sealed partial class MainMenuHome : Page
     {

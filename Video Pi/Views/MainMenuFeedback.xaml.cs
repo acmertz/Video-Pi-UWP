@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Video_Pi.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Main Menu feedback page. Send comments, criticism, suggestions, and bug reports to the developer.
     /// </summary>
     public sealed partial class MainMenuFeedback : Page
     {

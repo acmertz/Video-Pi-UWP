@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Video_Pi.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Settings page. Customize app functionality to your liking. Settings should be saved to the cloud.
     /// </summary>
     public sealed partial class MainMenuSettings : Page
     {

@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Video_Pi.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Main Menu news page. Shows recent app news, as well as a changelog of all updates to the app.
     /// </summary>
     public sealed partial class MainMenuNews : Page
     {
