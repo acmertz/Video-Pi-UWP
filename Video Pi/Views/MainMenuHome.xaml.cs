@@ -10,6 +10,7 @@ using Video_Pi.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.Storage.Search;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -33,10 +34,7 @@ namespace Video_Pi.Views
         {
             this.InitializeComponent();
             Projects = new List<VideoPiProject>();
-            for (int i=0; i<4; i++)
-            {
-                Projects.Add(new VideoPiProject(1920, 1080, new VideoGridSlot[0]));
-            }
+            RefreshProjectList();
         }
 
         private async void CreateNewProject(string aspectRatio)
@@ -107,6 +105,32 @@ namespace Video_Pi.Views
                     CreateNewProject("2.39:1");
                     break;
             }
+        }
+
+        async private void RefreshProjectList()
+        {
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    Projects.Add(new VideoPiProject(1920, 1080, new VideoGridSlot[0]));
+            //}
+
+            StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+
+            // Set options for file type and sort order.
+            List<string> fileTypeFilter = new List<string>();
+            fileTypeFilter.Add(".vpp");
+            QueryOptions queryOptions = new QueryOptions(CommonFileQuery.OrderByDate, fileTypeFilter);
+
+            // Get the project files in the local folder
+            StorageFileQueryResult results = localFolder.CreateFileQueryWithOptions(queryOptions);
+
+            //IReadOnlyList<StorageFile> sortedFiles = await results.GetFilesAsync();
+            //foreach (StorageFile item in sortedFiles)
+            //{
+            //    Debug.WriteLine(item.Name + ", " + item.DateCreated);
+            //}
+
+            //Debug.WriteLine("Looked up project files.");
         }
     }
 }
