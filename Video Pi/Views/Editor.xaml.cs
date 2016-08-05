@@ -94,7 +94,7 @@ namespace Video_Pi.Views
             for (int i = 0; i < 4; i++) CurrentProject.Composition.OverlayLayers.Add(new MediaOverlayLayer());
             UpdateMediaStreamSource();
 
-            // Todo: dynamically build the layout and slots based on the loaded project file
+            // Build timeline slot layout
             for (int i=0; i<CurrentProject.GridSlots.Length; i++)
             {
                 Button tempHeader = new Button();
@@ -113,6 +113,32 @@ namespace Video_Pi.Views
                 CurrentProject.GridSlots[i].TrackElement = tempTrack;
             }
 
+            // Iterate through all the clips in the project and load them
+            for (int i=0; i<CurrentProject.GridSlots.Length; i++)
+            {
+                // Only load the clip in the slot if it is not null
+                if (CurrentProject.GridSlots[i].Clip != null)
+                {
+                    CurrentProject.GridSlots[i].Clip.File = await StorageFile.GetFileFromPathAsync(CurrentProject.GridSlots[i].Clip.Path);
+
+                    // Todo: clean up code duplication
+
+                    // Create a MediaClip
+                    var clipToImport = await MediaClip.CreateFromFileAsync(CurrentProject.GridSlots[i].Clip.File);
+
+                    // Create a MediaOverlay
+                    CurrentProject.Composition.OverlayLayers[i].Overlays.Add(generateMediaOverlay(clipToImport, CurrentProject.GridSlots[i]));
+
+                    // Create a display for the clip in the timeline
+                    CurrentProject.GridSlots[i].Clip.ClipElement = generateClipElement(CurrentProject.GridSlots[i].Clip, clipToImport);
+
+                    // Add the clip to the track and update it in the model
+                    CurrentProject.GridSlots[i].TrackElement.Children.Add(CurrentProject.GridSlots[i].Clip.ClipElement);
+                }
+            }
+
+            UpdateMediaStreamSource();
+
             // Set window title and enable the back button
             SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Visible;
             SystemNavigationManager.GetForCurrentView().BackRequested += Unload;
@@ -122,6 +148,46 @@ namespace Video_Pi.Views
             appView.Title = CurrentProject.File.DisplayName;
 
             Debug.WriteLine("Loaded the project.");
+        }
+
+        private MediaOverlay generateMediaOverlay (MediaClip clipToImport, VideoGridSlot slotForOverlay)
+        {
+            var mediaOverlayToImport = new MediaOverlay(clipToImport);
+
+            // Generate coordinates for the overlay based on the slot
+            double playbackWidth = EditorPlaybackCanvas.ActualWidth;
+            double playbackHeight = EditorPlaybackCanvas.ActualHeight;
+
+            // Set the overlay's coordinates and add it to the media composition
+            mediaOverlayToImport.Position = generateOverlayRect(slotForOverlay, playbackWidth, playbackHeight);
+            mediaOverlayToImport.AudioEnabled = true;
+
+            return mediaOverlayToImport;
+        }
+
+        private Rect generateOverlayRect (VideoGridSlot gridSlot, double playbackWidth, double playbackHeight)
+        {
+            Rect overlayPosition;
+            overlayPosition.Width = gridSlot.Width * playbackWidth;
+            overlayPosition.Height = gridSlot.Height * playbackHeight;
+            overlayPosition.X = gridSlot.X * playbackWidth;
+            overlayPosition.Y = gridSlot.Y * playbackHeight;
+            return overlayPosition;
+        }
+
+        private StackPanel generateClipElement (VideoGridClip clipToGenerate, MediaClip mediaClip)
+        {
+            // Create a display for the clip in the timeline
+            StackPanel tempClipEl = new StackPanel();
+            tempClipEl.Style = TimelineClipStyle;
+            tempClipEl.Width = mediaClip.OriginalDuration.TotalMilliseconds / CurrentProject.MsPerPx;
+
+            TextBlock tempTitle = new TextBlock();
+            tempTitle.Style = TimelineClipTitleStyle;
+            tempTitle.Text = clipToGenerate.File.DisplayName;
+            tempClipEl.Children.Add(tempTitle);
+
+            return tempClipEl;
         }
 
         async private void importMedia (int targetSlot)
@@ -143,40 +209,23 @@ namespace Video_Pi.Views
                 var storageItemAccessList = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList;
                 storageItemAccessList.Add(fileToImport);
 
-                // Create a MediaClip and MediaOverlay to hold it
+                // Todo: clean up code duplication
+
+                // Create a MediaClip
                 var clipToImport = await MediaClip.CreateFromFileAsync(fileToImport);
-                var mediaOverlayToImport = new MediaOverlay(clipToImport);
 
-                // Generate coordinates for the overlay based on the slot
-                double playbackWidth = EditorPlaybackCanvas.ActualWidth;
-                double playbackHeight = EditorPlaybackCanvas.ActualHeight;
+                // Create a MediaOverlay
+                CurrentProject.Composition.OverlayLayers[targetSlot].Overlays.Add(generateMediaOverlay(clipToImport, CurrentProject.GridSlots[targetSlot]));
 
-                Rect overlayPosition;
-                overlayPosition.Width = CurrentProject.GridSlots[targetSlot].Width * playbackWidth;
-                overlayPosition.Height = CurrentProject.GridSlots[targetSlot].Height * playbackHeight;
-                overlayPosition.X = CurrentProject.GridSlots[targetSlot].X * playbackWidth;
-                overlayPosition.Y = CurrentProject.GridSlots[targetSlot].Y * playbackHeight;
-
-                // Set the overlay's coordinates and add it to the media composition
-                mediaOverlayToImport.Position = overlayPosition;
-                mediaOverlayToImport.AudioEnabled = true;
-                CurrentProject.Composition.OverlayLayers[targetSlot].Overlays.Add(mediaOverlayToImport);
+                VideoGridClip clipObj = new VideoGridClip(fileToImport);
+                CurrentProject.GridSlots[targetSlot].Clip = clipObj;
 
                 // Create a display for the clip in the timeline
-                StackPanel tempClipEl = new StackPanel();
-                tempClipEl.Style = TimelineClipStyle;
-                tempClipEl.Width = clipToImport.OriginalDuration.TotalMilliseconds / CurrentProject.MsPerPx;
-
-                TextBlock tempTitle = new TextBlock();
-                tempTitle.Style = TimelineClipTitleStyle;
-                tempTitle.Text = fileToImport.DisplayName;
-                tempClipEl.Children.Add(tempTitle);
-
-                VideoGridClip clipObj = new VideoGridClip(fileToImport, tempClipEl);
+                clipObj.ClipElement = generateClipElement(clipObj, clipToImport);
 
                 // Add the clip to the track and update it in the model
-                CurrentProject.GridSlots[targetSlot].TrackElement.Children.Add(tempClipEl);
-                CurrentProject.GridSlots[targetSlot].Clip = clipObj;
+                CurrentProject.GridSlots[targetSlot].TrackElement.Children.Add(clipObj.ClipElement);
+                
 
                 // Update the playback canvas
                 UpdateMediaStreamSource();

@@ -19,11 +19,10 @@ namespace Video_Pi.Models
         [DataMember]
         public string Path;
 
-        public VideoGridClip (StorageFile file, StackPanel view)
+        public VideoGridClip (StorageFile file)
         {
             File = file;
             Path = file.Path;
-            ClipElement = view;
         }
     }
 }
