@@ -83,8 +83,7 @@ namespace Video_Pi.Views
             StorageFile newProjectFile = await localFolder.CreateFileAsync("Untitled project.vpp", Windows.Storage.CreationCollisionOption.GenerateUniqueName);
             await FileIO.WriteTextAsync(newProjectFile, newProjectJSON);
 
-            Frame rootFrame = Window.Current.Content as Frame;
-            rootFrame.Navigate(typeof(Editor), newProjectFile.Path);
+            OpenProject(newProjectFile.Path);
         }
 
         private void NewProjectButtonClicked(object sender, RoutedEventArgs e)
@@ -107,30 +106,40 @@ namespace Video_Pi.Views
             }
         }
 
+        private void OpenProject(string projectPath)
+        {
+            Frame rootFrame = Window.Current.Content as Frame;
+            rootFrame.Navigate(typeof(Editor), projectPath);
+        }
+
         async private void RefreshProjectList()
         {
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    Projects.Add(new VideoPiProject(1920, 1080, new VideoGridSlot[0]));
-            //}
-
             StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            IReadOnlyList<IStorageFile> itemsList = await localFolder.GetFilesAsync();
 
-            // Set options for file type and sort order.
-            List<string> fileTypeFilter = new List<string>();
-            fileTypeFilter.Add(".vpp");
-            QueryOptions queryOptions = new QueryOptions(CommonFileQuery.OrderByDate, fileTypeFilter);
+            List<VideoPiProject> tempProjectList = new List<VideoPiProject>();
+            for (int i=0; i<itemsList.Count; i++)
+            {
+                StorageFile tempFile = (StorageFile)itemsList[i];
+                string fileContents = await Windows.Storage.FileIO.ReadTextAsync(tempFile);
 
-            // Get the project files in the local folder
-            StorageFileQueryResult results = localFolder.CreateFileQueryWithOptions(queryOptions);
+                // Deserialize the JSON data
+                DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(VideoPiProject));
+                MemoryStream ms = new MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(fileContents));
+                VideoPiProject tempProject = (VideoPiProject)js.ReadObject(ms);
+                tempProject.File = tempFile;
+                tempProject.Name = tempFile.DisplayName;
 
-            //IReadOnlyList<StorageFile> sortedFiles = await results.GetFilesAsync();
-            //foreach (StorageFile item in sortedFiles)
-            //{
-            //    Debug.WriteLine(item.Name + ", " + item.DateCreated);
-            //}
+                tempProjectList.Add(tempProject);
+            }
+            Projects = tempProjectList;
+            MainMenuProjectListView.ItemsSource = Projects;
+        }
 
-            //Debug.WriteLine("Looked up project files.");
+        private void ProjectListItemClicked(object sender, ItemClickEventArgs e)
+        {
+            VideoPiProject clickedProject = (VideoPiProject)e.ClickedItem;
+            OpenProject(clickedProject.File.Path);
         }
     }
 }

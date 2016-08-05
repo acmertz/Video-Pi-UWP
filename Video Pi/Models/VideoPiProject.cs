@@ -14,6 +14,8 @@ namespace Video_Pi.Models
         public MediaComposition Composition;
         public Windows.Storage.StorageFile File;
 
+        public string Name;
+
         [DataMember]
         public ProjectResolution Resolution { get; set; }
 
